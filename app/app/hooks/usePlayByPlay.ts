@@ -172,35 +172,46 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
       })
       .with({ type: "kill" }, (val) => {
         const { data } = val;
-        const team = data?.killer.team;
-        const name = data?.killer.name;
-
-        if (team && name) {
-          setScoreboard((prev) => ({
+        if (data) {
+          setShots((prev) => [
             ...prev,
-            [team]: {
-              ...prev[team],
-              [name]: {
-                ...prev[team][name],
-                kills: prev[team][name].kills + 1,
-              },
+            {
+              attacker: data.killer.name,
+              victim: data.victim.name,
+              id: val.raw,
             },
-          }));
+          ]);
+
+          const team = data?.killer.team;
+          const name = data?.killer.name;
+
+          if (team && name) {
+            setScoreboard((prev) => ({
+              ...prev,
+              [team]: {
+                ...prev[team],
+                [name]: {
+                  ...prev[team][name],
+                  kills: prev[team][name].kills + 1,
+                },
+              },
+            }));
+          }
+
+          setPlayers((prev) =>
+            prev.map((p) => {
+              if (p.id === data?.killer.name) {
+                return { ...p, pos: data.killer.position };
+              }
+
+              if (p.id === data?.victim.name) {
+                return { ...p, pos: data.victim.position, dead: true };
+              }
+
+              return p;
+            }),
+          );
         }
-
-        setPlayers((prev) =>
-          prev.map((p) => {
-            if (p.id === data?.killer.name) {
-              return { ...p, pos: data.killer.position };
-            }
-
-            if (p.id === data?.victim.name) {
-              return { ...p, pos: data.victim.position, dead: true };
-            }
-
-            return p;
-          }),
-        );
       })
       .otherwise(() => null);
   }, []);
