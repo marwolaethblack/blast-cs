@@ -2,6 +2,7 @@ import { FunctionComponent, PropsWithChildren, useMemo } from "react";
 import { Parsed } from "../../../api/event-parsers";
 import { match } from "ts-pattern";
 import { PlayerName } from "./player/PlayerName";
+import { teamTextColors } from "../utils/colors";
 
 interface Props {
   event: Parsed;
@@ -53,6 +54,16 @@ export const MatchEvent: FunctionComponent<Props> = ({ event }) => {
         }
 
         return null;
+      })
+      .with({ type: "ct-win" }, () => {
+        return (
+          <div
+            className={`flex items-center gap-1 border border-solid border-green-600 text-lg`}
+          >
+            <span className={`${teamTextColors["CT"]}`}>CT</span>
+            win
+          </div>
+        );
       })
       .otherwise(() => null);
   }, [event]);
