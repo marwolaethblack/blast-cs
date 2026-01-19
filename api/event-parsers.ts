@@ -6,13 +6,17 @@ import { teamFactionEvent } from "./events/team-faction";
 import { playerTeamEvent } from "./events/player-team";
 import { mapSelectEvent } from "./events/map-select";
 import { roundEndEvent } from "./events/round-end";
+import { bombPlantEvent } from "./events/bomb-plant";
+import { terroristsWinEvent } from "./events/terrorists-win";
 
-type Parsed =
-  | ReturnType<typeof killEvent>
-  | ReturnType<typeof attackEvent>
+export type Parsed =
   | ReturnType<typeof connectEvent>
   | ReturnType<typeof teamFactionEvent>
   | ReturnType<typeof playerTeamEvent>
+  | ReturnType<typeof killEvent>
+  | ReturnType<typeof attackEvent>
+  | ReturnType<typeof bombPlantEvent>
+  | ReturnType<typeof terroristsWinEvent>
   | ReturnType<typeof mapSelectEvent>
   | ReturnType<typeof roundEndEvent>
   | { type: "other"; raw: string };
@@ -33,6 +37,12 @@ export const eventParser = (event: string): Parsed =>
     })
     .with(P.string.includes(" attacked "), () => {
       return attackEvent(event);
+    })
+    .with(P.string.includes("Planted_The_Bomb"), () => {
+      return bombPlantEvent(event);
+    })
+    .with(P.string.includes("SFUI_Notice_Terrorists_Win"), () => {
+      return terroristsWinEvent(event);
     })
     .with(P.string.includes('World triggered "Match_Start" on'), () => {
       return mapSelectEvent(event);

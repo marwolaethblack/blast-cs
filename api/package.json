@@ -24,6 +24,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "magic-regexp": "^0.10.0",
     "ts-pattern": "^5.9.0"

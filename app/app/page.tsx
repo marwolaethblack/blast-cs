@@ -8,6 +8,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
+import { MapProvider } from "./components/MapProvider";
 
 export default function Home() {
   const [queryClient] = useState(() => new QueryClient());
@@ -15,7 +16,7 @@ export default function Home() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black ">
-        <Map />
+        <MapProvider />
       </div>
     </QueryClientProvider>
   );

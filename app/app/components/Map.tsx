@@ -1,19 +1,31 @@
 "use client";
-
 import { FunctionComponent } from "react";
 import Image from "next/image";
 import { PlayerDot } from "./PlayerDot";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FAFA } from "../../../shared/types";
+import { PlayByPlay, RoundData } from "../../../api/play-by-play";
+import { match, P } from "ts-pattern";
+import { CSTeam } from "../../../api/events/types";
+import { usePlayers } from "../hooks/usePlayers";
 
-export const Map: FunctionComponent = () => {
+interface Props {
+  playByPlay: PlayByPlay;
+}
+
+export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
   const imgRef = useRef<HTMLImageElement>(null);
   const [scale, setScale] = useState(1);
 
-  const a: FAFA = { a: "fas" };
+  const [start, setStart] = useState(false);
+  const { players, currentEvents } = usePlayers(
+    playByPlay.rounds[1] || {},
+    playByPlay.players,
+    start,
+  );
 
   useEffect(() => {
+    const ref = imgRef.current;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width } = entry.contentRect;
@@ -22,15 +34,12 @@ export const Map: FunctionComponent = () => {
       }
     });
 
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
+    if (ref) {
+      observer.observe(ref);
     }
-    return () => imgRef.current && observer.unobserve(imgRef.current);
-  }, [imgRef.current]);
 
-  // top left
-  const x_offset = -3453;
-  const y_offset = 2887;
+    return () => ref && observer.unobserve(ref);
+  }, [imgRef.current]);
 
   function getPosX(pos_x: number) {
     return Math.abs(pos_x + 3453) / 7.0 - 10;
@@ -39,34 +48,37 @@ export const Map: FunctionComponent = () => {
     return Math.abs(pos_y - 2887) / 7.0 - 10;
   }
 
-  const posa = getPosX(1574);
-  const posb = getPosY(-2292);
-
-  const query = useQuery({
-    queryKey: ["play-by-play"],
-    queryFn: async () => {
-      const response = await fetch("http://localhost:3333/play-by-play");
-      return await response.json();
-    },
-  });
-
-  console.log(query.data);
   // z = -445 lower levele
 
-  if (query.isLoading) {
-    return <div>Loading</div>;
-  }
-
   return (
-    <div className="relative">
-      <Image
-        src="/overviews/de_nuke_radar.png"
-        alt="Next.js logo"
-        width={1024}
-        height={1024}
-        ref={imgRef}
-      />
-      <PlayerDot left={posa * scale} top={posb * scale} color="bg-blue-500" />
+    <div>
+      <button onClick={() => setStart(true)}>Start</button>
+      <button onClick={() => setStart(false)}>Stop</button>
+      <div className="relative">
+        <Image
+          src="/overviews/de_nuke_radar.png"
+          alt="Next.js logo"
+          width={1024}
+          height={1024}
+          ref={imgRef}
+        />
+        {players.map((p) => {
+          return (
+            <PlayerDot
+              dead={p.dead}
+              key={p.id}
+              left={getPosX(p.pos[0]) * scale}
+              top={getPosY(p.pos[1]) * scale}
+              color={p.team === "CT" ? "bg-blue-500" : "bg-red-500"}
+            />
+          );
+        })}
+      </div>
+      <div>
+        {currentEvents.map((e) => (
+          <p key={e.raw}>{e.raw}</p>
+        ))}
+      </div>
     </div>
   );
 };

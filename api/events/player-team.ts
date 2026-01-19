@@ -1,3 +1,5 @@
+import { CSTeam } from "./types";
+
 export const playerTeamEvent = (event: string) => {
   const regex =
     /"([^"<]+)<\d+><[^>]+>"\s+switched\s+from\s+team\s+<([^>]+)>\s+to\s+<([^>]+)>/;
@@ -7,7 +9,7 @@ export const playerTeamEvent = (event: string) => {
     const data = {
       player: match[1],
       fromTeam: match[2],
-      toTeam: match[3],
+      toTeam: match[3] as CSTeam,
     };
 
     return {

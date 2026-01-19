@@ -1,3 +1,4 @@
+import { parseCoordinateString } from "../utils/utils";
 import { CSTeam } from "./types";
 
 export const killEvent = (event: string) => {
@@ -10,12 +11,12 @@ export const killEvent = (event: string) => {
       killer: {
         name: match[1],
         team: match[2] as CSTeam,
-        position: match[3],
+        position: parseCoordinateString(match[3]),
       },
       victim: {
         name: match[4],
         team: match[5] as CSTeam,
-        position: match[6],
+        position: parseCoordinateString(match[6]),
       },
       weapon: match[7],
       modifier: match[8],
