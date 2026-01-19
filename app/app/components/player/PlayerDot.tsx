@@ -22,7 +22,7 @@ export const PlayerDot: FunctionComponent<IProps> = ({
   if (dead) {
     return (
       <div className="z-20 absolute " style={{ left, top }}>
-        <div ref={ref}>
+        <div ref={ref} className="w-fit h-fit">
           <svg
             width="8px"
             height="8px"
