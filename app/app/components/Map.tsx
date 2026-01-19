@@ -8,6 +8,8 @@ import { usePlayByPlay } from "../hooks/usePlayByPlay";
 import { MatchEvent } from "./MatchEvent";
 import Select from "react-select";
 import { Arrow } from "./Arrow";
+import { MatchLog } from "./match/MatchLog";
+import { Controls } from "./map/Controls";
 
 interface Props {
   playByPlay: PlayByPlay;
@@ -77,14 +79,12 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
   return (
     <div className="flex gap-2">
       <div>
-        <button onClick={() => setStart(true)}>Start</button>
-        <button onClick={() => setStart(false)}>Stop</button>
-        <button onClick={resetRound}>Reset</button>
-        <div className="flex gap-2">
-          <button onClick={() => setSpeed((prev) => prev - 0.25)}>-</button>
-          {speed}
-          <button onClick={() => setSpeed((prev) => prev + 0.25)}>+</button>
-        </div>
+        <Controls
+          resetRound={resetRound}
+          setSpeed={setSpeed}
+          setStart={setStart}
+          speed={speed}
+        />
         <Select
           options={playByPlay.rounds.map((_, i) => ({
             label: `Round ${i + 1}`,
@@ -96,7 +96,7 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
           }}
         />
       </div>
-      <div className="relative bg-amber-400">
+      <div className="relative bg-amber-400 max-w-[1024px] max-h-[1024px]">
         <Image
           src="/overviews/de_nuke_radar.png"
           alt="Next.js logo"
@@ -132,11 +132,7 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
           />
         ))}
       </div>
-      <div>
-        {eventLog.map((e) => (
-          <MatchEvent event={e} key={e.raw} />
-        ))}
-      </div>
+      <MatchLog eventLog={eventLog} round={roundIndex + 1} />
     </div>
   );
 };
