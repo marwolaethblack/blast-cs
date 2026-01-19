@@ -8,6 +8,7 @@ import { mapSelectEvent } from "./events/map-select";
 import { roundEndEvent } from "./events/round-end";
 import { bombPlantEvent } from "./events/bomb-plant";
 import { terroristsWinEvent } from "./events/terrorists-win";
+import { ctWinEvent } from "./events/ct-win";
 
 export type Parsed =
   | ReturnType<typeof connectEvent>
@@ -17,6 +18,7 @@ export type Parsed =
   | ReturnType<typeof attackEvent>
   | ReturnType<typeof bombPlantEvent>
   | ReturnType<typeof terroristsWinEvent>
+  | ReturnType<typeof ctWinEvent>
   | ReturnType<typeof mapSelectEvent>
   | ReturnType<typeof roundEndEvent>
   | { type: "other"; raw: string };
@@ -43,6 +45,9 @@ export const eventParser = (event: string): Parsed =>
     })
     .with(P.string.includes("SFUI_Notice_Terrorists_Win"), () => {
       return terroristsWinEvent(event);
+    })
+    .with(P.string.includes("SFUI_Notice_CTs_Win"), () => {
+      return ctWinEvent(event);
     })
     .with(P.string.includes('World triggered "Match_Start" on'), () => {
       return mapSelectEvent(event);
