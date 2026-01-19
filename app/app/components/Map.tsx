@@ -7,8 +7,9 @@ import { useQuery } from "@tanstack/react-query";
 import { PlayByPlay, RoundData } from "../../../api/play-by-play";
 import { match, P } from "ts-pattern";
 import { CSTeam } from "../../../api/events/types";
-import { usePlayByPlay } from "../hooks/usePlayers";
+import { usePlayByPlay } from "../hooks/usePlayByPlay";
 import { MatchEvent } from "./MatchEvent";
+import Select from "react-select";
 
 interface Props {
   playByPlay: PlayByPlay;
@@ -18,8 +19,21 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
   const imgRef = useRef<HTMLImageElement>(null);
   const [scale, setScale] = useState(1);
 
-  const [start, setStart] = useState(false);
-  const { players, eventLog } = usePlayByPlay({ playByPlay, start });
+  const {
+    players,
+    eventLog,
+    changeRound,
+    resetRound,
+    roundIndex,
+    setStart,
+    scoreboard,
+    speed,
+    setSpeed,
+  } = usePlayByPlay({
+    playByPlay,
+  });
+
+  console.log("(((", scoreboard);
 
   useEffect(() => {
     const ref = imgRef.current;
@@ -52,6 +66,22 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
       <div>
         <button onClick={() => setStart(true)}>Start</button>
         <button onClick={() => setStart(false)}>Stop</button>
+        <button onClick={resetRound}>Reset</button>
+        <div className="flex gap-2">
+          <button onClick={() => setSpeed((prev) => prev - 0.25)}>-</button>
+          {speed}
+          <button onClick={() => setSpeed((prev) => prev + 0.25)}>+</button>
+        </div>
+        <Select
+          options={playByPlay.rounds.map((_, i) => ({
+            label: `Round ${i + 1}`,
+            value: i,
+          }))}
+          onChange={(val) => {
+            console.log(val);
+            changeRound(val?.value || 0);
+          }}
+        />
       </div>
       <div className="relative bg-amber-400">
         <Image
@@ -68,7 +98,8 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
               key={p.id}
               left={getPosX(p.pos[0]) * scale}
               top={getPosY(p.pos[1]) * scale}
-              color={p.team === "CT" ? "bg-blue-500" : "bg-amber-400"}
+              team={p.team}
+              name={p.name}
             />
           );
         })}
