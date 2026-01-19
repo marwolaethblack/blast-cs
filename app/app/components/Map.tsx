@@ -1,13 +1,14 @@
 "use client";
 import { FunctionComponent } from "react";
 import Image from "next/image";
-import { PlayerDot } from "./PlayerDot";
+import { PlayerDot } from "./player/PlayerDot";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PlayByPlay, RoundData } from "../../../api/play-by-play";
 import { match, P } from "ts-pattern";
 import { CSTeam } from "../../../api/events/types";
-import { usePlayers } from "../hooks/usePlayers";
+import { usePlayByPlay } from "../hooks/usePlayers";
+import { MatchEvent } from "./MatchEvent";
 
 interface Props {
   playByPlay: PlayByPlay;
@@ -18,11 +19,7 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
   const [scale, setScale] = useState(1);
 
   const [start, setStart] = useState(false);
-  const { players, currentEvents } = usePlayers(
-    playByPlay.rounds[1] || {},
-    playByPlay.players,
-    start,
-  );
+  const { players, eventLog } = usePlayByPlay({ playByPlay, start });
 
   useEffect(() => {
     const ref = imgRef.current;
@@ -51,10 +48,12 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
   // z = -445 lower levele
 
   return (
-    <div>
-      <button onClick={() => setStart(true)}>Start</button>
-      <button onClick={() => setStart(false)}>Stop</button>
-      <div className="relative">
+    <div className="flex gap-2">
+      <div>
+        <button onClick={() => setStart(true)}>Start</button>
+        <button onClick={() => setStart(false)}>Stop</button>
+      </div>
+      <div className="relative bg-amber-400">
         <Image
           src="/overviews/de_nuke_radar.png"
           alt="Next.js logo"
@@ -69,14 +68,14 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
               key={p.id}
               left={getPosX(p.pos[0]) * scale}
               top={getPosY(p.pos[1]) * scale}
-              color={p.team === "CT" ? "bg-blue-500" : "bg-red-500"}
+              color={p.team === "CT" ? "bg-blue-500" : "bg-amber-400"}
             />
           );
         })}
       </div>
       <div>
-        {currentEvents.map((e) => (
-          <p key={e.raw}>{e.raw}</p>
+        {eventLog.map((e) => (
+          <MatchEvent event={e} key={e.raw} />
         ))}
       </div>
     </div>

@@ -14,13 +14,15 @@ export interface Player {
   dead: boolean;
 }
 
-export const usePlayers = (
-  round: RoundData,
-  initialPlayers: Record<string, CSTeam>,
-  start: boolean,
-) => {
+export const usePlayByPlay = ({
+  playByPlay,
+  start,
+}: {
+  playByPlay: PlayByPlay;
+  start: boolean;
+}) => {
   const playersBaseState = useMemo(() => {
-    const playersInTeams = Object.entries(initialPlayers).reduce<
+    const playersInTeams = Object.entries(playByPlay.players).reduce<
       Record<CSTeam, string[]>
     >(
       (acc, [player, team]) => {
@@ -47,10 +49,10 @@ export const usePlayers = (
         dead: false,
       })),
     ];
-  }, [initialPlayers]);
+  }, [playByPlay]);
 
   const [players, setPlayers] = useState<Array<Player>>(playersBaseState);
-  const [currentEvents, setCurrentEvents] = useState<Parsed[]>([]);
+  const [eventLog, setEventLog] = useState<Parsed[]>([]);
 
   const handleEvent = useCallback(
     (e: Parsed) => {
@@ -112,6 +114,7 @@ export const usePlayers = (
   const entryIndexRef = useRef<number>(0);
 
   useEffect(() => {
+    const round = playByPlay.rounds[0];
     const entries = Object.entries(round);
 
     console.log("@@", intervalRef.current, start);
@@ -120,17 +123,18 @@ export const usePlayers = (
       intervalRef.current = setInterval(() => {
         if (entryIndexRef.current >= entries.length - 1) {
           clearInterval(intervalRef.current);
+          return;
         }
-        setCurrentEvents(entries[entryIndexRef.current][1]);
+        setEventLog((prev) => [...prev, ...entries[entryIndexRef.current][1]]);
         entries[entryIndexRef.current][1].map(handleEvent);
         entryIndexRef.current++;
       }, 1000);
     } else {
       clearInterval(intervalRef.current);
     }
-  }, [round, handleEvent, start]);
+  }, [handleEvent, start, playByPlay.rounds]);
 
   console.log("@@@", players);
 
-  return { players, currentEvents };
+  return { players, eventLog };
 };
