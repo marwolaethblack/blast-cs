@@ -3,13 +3,11 @@ import { FunctionComponent } from "react";
 import Image from "next/image";
 import { PlayerDot } from "./player/PlayerDot";
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { PlayByPlay, RoundData } from "../../../api/play-by-play";
-import { match, P } from "ts-pattern";
-import { CSTeam } from "../../../api/events/types";
+import { PlayByPlay } from "../../../api/play-by-play";
 import { usePlayByPlay } from "../hooks/usePlayByPlay";
 import { MatchEvent } from "./MatchEvent";
 import Select from "react-select";
+import { Arrow } from "./Arrow";
 
 interface Props {
   playByPlay: PlayByPlay;
@@ -17,6 +15,8 @@ interface Props {
 
 export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
   const imgRef = useRef<HTMLImageElement>(null);
+  const playerRefs = useRef<Record<string, HTMLDivElement>>({});
+  const [updateTrigger, setUpdateTrigger] = useState(0);
   const [scale, setScale] = useState(1);
 
   const {
@@ -29,6 +29,7 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
     scoreboard,
     speed,
     setSpeed,
+    shots,
   } = usePlayByPlay({
     playByPlay,
   });
@@ -49,7 +50,12 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
       observer.observe(ref);
     }
 
-    return () => ref && observer.unobserve(ref);
+    return () => {
+      if (ref) {
+        observer.unobserve(ref);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [imgRef.current]);
 
   function getPosX(pos_x: number) {
@@ -58,6 +64,13 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
   function getPosY(pos_y: number) {
     return Math.abs(pos_y - 2887) / 7.0 - 10;
   }
+
+  // Trigger arrow update when players change
+  useEffect(() => {
+    setUpdateTrigger((prev) => prev + 1);
+  }, [players, shots]);
+
+  console.log("7877", shots);
 
   // z = -445 lower levele
 
@@ -100,9 +113,24 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
               top={getPosY(p.pos[1]) * scale}
               team={p.team}
               name={p.name}
+              ref={(ref) => {
+                if (ref) {
+                  playerRefs.current[p.name] = ref;
+                } else {
+                  delete playerRefs.current[p.name];
+                }
+              }}
             />
           );
         })}
+        {shots.map((s) => (
+          <Arrow
+            key={s.id}
+            fromRef={{ current: playerRefs.current[s.attacker] }}
+            toRef={{ current: playerRefs.current[s.victim] }}
+            updateTrigger={updateTrigger}
+          />
+        ))}
       </div>
       <div>
         {eventLog.map((e) => (

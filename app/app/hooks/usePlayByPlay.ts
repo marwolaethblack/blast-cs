@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { CSTeam } from "../../../api/events/types";
 import { match } from "ts-pattern";
 import { PlayByPlay, RoundData } from "../../../api/play-by-play";
@@ -35,7 +42,7 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
     [playByPlay.players],
   );
 
-  const playersBaseState = useMemo(() => {
+  const playersBaseState: Array<Player> = useMemo(() => {
     return [
       ...playersInTeams.CT.map((player, index) => ({
         id: player || "",
@@ -60,6 +67,9 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
   const [start, setStart] = useState(false);
 
   const [players, setPlayers] = useState<Array<Player>>(playersBaseState);
+  const [shots, setShots] = useState<
+    Array<{ id: string; attacker: string; victim: string }>
+  >([]);
   const [eventLog, setEventLog] = useState<Parsed[]>([]);
 
   const [scoreboard, setScoreboard] = useState<Scoreboard>({
@@ -93,6 +103,7 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
     setRoundIndex(roundIndex);
     setEventLog([]);
     setStart(false);
+    setShots([]);
     entryIndexRef.current = 0;
   };
 
@@ -118,6 +129,15 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
       .with({ type: "attack" }, (val) => {
         const { data } = val;
         if (data) {
+          setShots((prev) => [
+            ...prev,
+            {
+              attacker: data.attacker.name,
+              victim: data.victim.name,
+              id: val.raw,
+            },
+          ]);
+
           const attacker = { data };
           const team = data?.attacker.team;
           const name = data?.attacker.name;
@@ -200,10 +220,11 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
         }
 
         const index = entryIndexRef.current;
+        setShots([]);
         setEventLog((prev) => [...prev, ...entries[index][1]]);
         entries[index][1].map(handleEvent);
         entryIndexRef.current++;
-      }, 1000 * speed);
+      }, 1000 / speed);
     }
 
     return () => clearInterval(intervalRef.current);
@@ -219,5 +240,6 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
     scoreboard,
     speed,
     setSpeed,
+    shots,
   };
 };
