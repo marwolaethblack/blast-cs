@@ -112,7 +112,6 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
   };
 
   const handleEvent = useCallback((e: Parsed) => {
-    console.log("EVENT", e);
     match(e)
       .with({ type: "player-team" }, (val) => {
         const { data } = val;
@@ -129,40 +128,49 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
       .with({ type: "attack" }, (val) => {
         const { data } = val;
         if (data) {
+          const { attacker, victim } = data;
           setShots((prev) => [
             ...prev,
             {
-              attacker: data.attacker.name,
-              victim: data.victim.name,
+              attacker: attacker.name,
+              victim: victim.name,
               id: val.raw,
             },
           ]);
 
-          const attacker = { data };
+          const attackerZ = [...attacker.position].pop() || 0;
+          const victimZ = [...victim.position].pop() || 0;
+
+          if (attackerZ <= -445 || victimZ <= -445) {
+            //bottom map
+          } else {
+            //top map
+          }
+
           const team = data?.attacker.team;
           const name = data?.attacker.name;
 
           if (team && name) {
-            setScoreboard((prev) => ({
-              ...prev,
-              [team]: {
-                ...prev[team],
-                [name]: {
-                  ...prev[team][name],
-                  damage: prev[team][name].damage + data.damage,
-                },
-              },
-            }));
+            // setScoreboard((prev) => ({
+            //   ...prev,
+            //   [team]: {
+            //     ...prev[team],
+            //     [name]: {
+            //       ...prev[team][name],
+            //       damage: prev[team][name].damage + data.damage,
+            //     },
+            //   },
+            // }));
           }
 
           setPlayers((prev) =>
             prev.map((p) => {
-              if (p.id === data?.attacker.name) {
-                return { ...p, pos: data.attacker.position };
+              if (p.id === attacker.name) {
+                return { ...p, pos: attacker.position };
               }
 
-              if (p.id === data?.victim.name) {
-                return { ...p, pos: data.victim.position };
+              if (p.id === victim.name) {
+                return { ...p, pos: victim.position };
               }
 
               return p;
@@ -221,19 +229,18 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
 
   useEffect(() => {
     const round = playByPlay.rounds[roundIndex];
-    const entries = Object.entries(round);
 
     if (start) {
       intervalRef.current = setInterval(() => {
-        if (entryIndexRef.current > entries.length - 1) {
+        const index = entryIndexRef.current;
+        if (index > round.length - 1) {
           clearInterval(intervalRef.current);
           return;
         }
 
-        const index = entryIndexRef.current;
         setShots([]);
-        setEventLog((prev) => [...prev, ...entries[index][1]]);
-        entries[index][1].map(handleEvent);
+        setEventLog((prev) => [...prev, round[index]]);
+        [round[index]].map(handleEvent);
         entryIndexRef.current++;
       }, 1000 / speed);
     }
