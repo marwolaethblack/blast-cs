@@ -28,7 +28,7 @@ export const eventParser = (event: string): Parsed =>
     .with(P.string.includes(" STEAM USERID validated"), () => {
       return connectEvent(event);
     })
-    .with(P.string.includes(" Team playing"), () => {
+    .with(P.string.includes("MatchStatus: Team playing"), () => {
       return teamFactionEvent(event);
     })
     .with(P.string.includes(" switched from team "), () => {

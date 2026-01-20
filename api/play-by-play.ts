@@ -1,7 +1,7 @@
 import { eventParser } from "./event-parsers";
 import { CSTeam, MapMeta } from "./events/types";
 
-export type RoundData = Record<string, Array<ReturnType<typeof eventParser>>>;
+export type RoundData = Array<ReturnType<typeof eventParser>>;
 
 export interface PlayByPlay {
   map: {
@@ -12,6 +12,7 @@ export interface PlayByPlay {
   };
   players: Record<string, CSTeam>;
   rounds: Array<RoundData>;
+  teams: Record<string, CSTeam>;
 }
 
 export const playByPlay = (match: string) => {
@@ -20,20 +21,29 @@ export const playByPlay = (match: string) => {
   const lastMatchStart = events.findLastIndex((e) => e.includes("Match_Start"));
   const eventsBeforeMatchStart = events.slice(0, lastMatchStart);
 
-  const initialPlayersWithTeams = eventsBeforeMatchStart.reduce<
-    Record<string, CSTeam>
-  >((acc, e) => {
-    const parsedEvent = eventParser(e);
-    if (parsedEvent.type === "player-team") {
-      acc[parsedEvent.data.player] = parsedEvent.data.toTeam;
-    }
+  const initialPlayersWithTeams = eventsBeforeMatchStart.reduce<{
+    players: Record<string, CSTeam>;
+    teams: Record<string, CSTeam>;
+  }>(
+    (acc, e) => {
+      const parsedEvent = eventParser(e);
+      if (parsedEvent.type === "player-team") {
+        acc.players[parsedEvent.data.player] = parsedEvent.data.toTeam;
+      }
 
-    return acc;
-  }, {});
+      if (parsedEvent.type === "team-faction") {
+        console.log(parsedEvent);
+        acc.teams[parsedEvent.data.teamName] = parsedEvent.data.teamSide;
+      }
+
+      return acc;
+    },
+    { players: {}, teams: {} },
+  );
 
   const eventsFromMatchStart = events.slice(lastMatchStart, undefined);
 
-  let round_buffer: RoundData = {};
+  let round_buffer: RoundData = [];
 
   const grouped = eventsFromMatchStart.reduce(
     (acc, ev) => {
@@ -55,15 +65,15 @@ export const playByPlay = (match: string) => {
         };
       }
 
-      round_buffer[date] = [...(round_buffer[date] || []), parsedEvent];
+      round_buffer = [...(round_buffer || []), parsedEvent];
 
       if (parsedEvent.type === "round-end") {
         const newAcc = {
           ...acc,
-          rounds: [...acc.rounds, { ...round_buffer }],
+          rounds: [...acc.rounds, round_buffer],
         };
 
-        round_buffer = {};
+        round_buffer = [];
 
         return newAcc;
       }
@@ -72,7 +82,8 @@ export const playByPlay = (match: string) => {
     },
     {
       rounds: [],
-      players: initialPlayersWithTeams,
+      players: initialPlayersWithTeams.players,
+      teams: initialPlayersWithTeams.teams,
     } as PlayByPlay,
   );
 
