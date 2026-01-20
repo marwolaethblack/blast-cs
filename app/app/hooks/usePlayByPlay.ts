@@ -248,6 +248,7 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
     resetRound,
     roundIndex,
     setStart,
+    start,
     scoreboard,
     speed,
     setSpeed,

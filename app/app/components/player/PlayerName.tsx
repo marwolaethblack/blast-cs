@@ -9,6 +9,8 @@ interface Props {
 
 export const PlayerName: FunctionComponent<Props> = ({ name, team }) => {
   return (
-    <div className={`${teamTextColors[team]} text-sm font-medium`}>{name}</div>
+    <span className={`${teamTextColors[team]} text-sm font-medium`}>
+      {name}
+    </span>
   );
 };

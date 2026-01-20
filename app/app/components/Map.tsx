@@ -28,6 +28,7 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
     resetRound,
     roundIndex,
     setStart,
+    start,
     scoreboard,
     speed,
     setSpeed,
@@ -72,31 +73,26 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
     setUpdateTrigger((prev) => prev + 1);
   }, [players, shots]);
 
-  console.log("7877", shots);
-
   // z = -445 lower levele
 
   return (
     <div className="flex gap-2">
-      <div>
-        <Controls
-          resetRound={resetRound}
-          setSpeed={setSpeed}
-          setStart={setStart}
-          speed={speed}
-        />
-        <Select
-          options={playByPlay.rounds.map((_, i) => ({
-            label: `Round ${i + 1}`,
-            value: i,
-          }))}
-          onChange={(val) => {
-            console.log(val);
-            changeRound(val?.value || 0);
-          }}
-        />
-      </div>
-      <div className="relative bg-amber-400 max-w-[1024px] max-h-[1024px]">
+      <div className="relative bg-amber-400 size-[1024px] flex-none">
+        <div className="absolute left-[50%] top-0">
+          <Controls
+            resetRound={resetRound}
+            setSpeed={setSpeed}
+            setStart={setStart}
+            start={start}
+            speed={speed}
+            round={roundIndex}
+            rounds={playByPlay.rounds.map((_, i) => ({
+              label: `Round ${i + 1}`,
+              value: i,
+            }))}
+            changeRound={changeRound}
+          />
+        </div>
         <Image
           src="/overviews/de_nuke_radar.png"
           alt="Next.js logo"
@@ -132,7 +128,7 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
           />
         ))}
       </div>
-      <MatchLog eventLog={eventLog} round={roundIndex + 1} />
+      <MatchLog start={start} eventLog={eventLog} round={roundIndex + 1} />
     </div>
   );
 };

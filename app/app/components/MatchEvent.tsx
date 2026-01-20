@@ -14,7 +14,7 @@ export const MatchEvent: FunctionComponent<Props> = ({ event }) => {
       .with({ type: "attack" }, (val) => {
         if (val.data) {
           return (
-            <div className="flex items-center gap-1">
+            <>
               <PlayerName
                 name={val.data.attacker.name}
                 team={val.data.attacker.team}
@@ -28,7 +28,7 @@ export const MatchEvent: FunctionComponent<Props> = ({ event }) => {
               <HealthDamage>{val.data.damage}</HealthDamage> and{" "}
               <ArmorDamage>{val.data.armorDamage}</ArmorDamage>
               <HitGroup>{val.data.hitgroup}</HitGroup>
-            </div>
+            </>
           );
         }
 
@@ -37,7 +37,7 @@ export const MatchEvent: FunctionComponent<Props> = ({ event }) => {
       .with({ type: "kill" }, (val) => {
         if (val.data) {
           return (
-            <div className="flex items-center gap-1">
+            <>
               <PlayerName
                 name={val.data.killer.name}
                 team={val.data.killer.team}
@@ -47,9 +47,9 @@ export const MatchEvent: FunctionComponent<Props> = ({ event }) => {
                 name={val.data.victim.name}
                 team={val.data.victim.team}
               />
-              with {val.data.weapon}
+              with <span className="text-cyan-300">{val.data.weapon}</span>
               <HitGroup>{val.data.modifier}</HitGroup>
-            </div>
+            </>
           );
         }
 
@@ -72,17 +72,23 @@ export const MatchEvent: FunctionComponent<Props> = ({ event }) => {
     return null;
   }
 
-  return <div>{text}</div>;
+  return <div className="flex gap-1 items-center flex-wrap p-1">{text}</div>;
 };
 
 const HealthDamage: FunctionComponent<PropsWithChildren> = ({ children }) => (
-  <span className="text-red-400 font-medium">{children} damage</span>
+  <span className="text-red-400 font-medium whitespace-nowrap">
+    {children} damage
+  </span>
 );
 
 const ArmorDamage: FunctionComponent<PropsWithChildren> = ({ children }) => (
-  <span className="text-blue-200 font-medium">{children} armor damage</span>
+  <span className="text-blue-200 font-medium  whitespace-nowrap">
+    {children} armor damage
+  </span>
 );
 
 const HitGroup: FunctionComponent<PropsWithChildren> = ({ children }) => (
-  <span className="text-fuchsia-400 font-medium">{children}</span>
+  <span className="text-fuchsia-400 font-medium  whitespace-nowrap">
+    {children}
+  </span>
 );
