@@ -12,6 +12,7 @@ import { PlayByPlay, RoundData } from "../../../api/play-by-play";
 import { throttle } from "@tanstack/react-pacer";
 import { Parsed } from "../../../api/event-parsers";
 import { getCTSpawn, getTSpawn } from "../utils/spawns";
+import { getScoreForRound, mergeScoreBoards } from "./useScoreBoard";
 
 export interface Player {
   id: string;
@@ -72,31 +73,9 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
   >([]);
   const [eventLog, setEventLog] = useState<Parsed[]>([]);
 
-  const [scoreboard, setScoreboard] = useState<Scoreboard>({
-    CT: playersInTeams.CT.reduce<Record<string, PlayerStats>>((acc, player) => {
-      acc[player] = {
-        damage: 0,
-        deaths: 0,
-        kills: 0,
-      };
-
-      return acc;
-    }, {}),
-    TERRORIST: playersInTeams.TERRORIST.reduce<Record<string, PlayerStats>>(
-      (acc, player) => {
-        acc[player] = {
-          damage: 0,
-          deaths: 0,
-          kills: 0,
-        };
-
-        return acc;
-      },
-      {},
-    ),
-    Unassigned: {},
-    Spectator: {},
-  });
+  const [scoreboard, setScoreboard] = useState(
+    getScoreForRound(playersBaseState.map((p) => p.name)),
+  );
 
   const changeRound = (roundIndex: number) => {
     setPlayers(playersBaseState);
@@ -105,6 +84,24 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
     setStart(false);
     setShots([]);
     entryIndexRef.current = 0;
+
+    const scoresForPreviousRounds = playByPlay.rounds
+      .slice(0, roundIndex)
+      .map((r) =>
+        getScoreForRound(
+          playersBaseState.map((p) => p.name),
+          r,
+        ),
+      );
+
+    const total = scoresForPreviousRounds.reduce(
+      (acc, scoreboard) => {
+        return mergeScoreBoards(acc, scoreboard);
+      },
+      getScoreForRound(playersBaseState.map((p) => p.name)),
+    );
+
+    setScoreboard(total);
   };
 
   const resetRound = () => {
@@ -194,16 +191,16 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
           const name = data?.killer.name;
 
           if (team && name) {
-            setScoreboard((prev) => ({
-              ...prev,
-              [team]: {
-                ...prev[team],
-                [name]: {
-                  ...prev[team][name],
-                  kills: prev[team][name].kills + 1,
-                },
-              },
-            }));
+            // setScoreboard((prev) => ({
+            //   ...prev,
+            //   [team]: {
+            //     ...prev[team],
+            //     [name]: {
+            //       ...prev[team][name],
+            //       kills: prev[team][name].kills + 1,
+            //     },
+            //   },
+            // }));
           }
 
           setPlayers((prev) =>

@@ -6,10 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import { PlayByPlay } from "../../../api/play-by-play";
 import { usePlayByPlay } from "../hooks/usePlayByPlay";
 import { MatchEvent } from "./MatchEvent";
-import Select from "react-select";
 import { Arrow } from "./Arrow";
 import { MatchLog } from "./match/MatchLog";
 import { Controls } from "./map/Controls";
+import { Scoreboard } from "./match/Scoreboard";
 
 interface Props {
   playByPlay: PlayByPlay;
@@ -36,8 +36,6 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
   } = usePlayByPlay({
     playByPlay,
   });
-
-  console.log("(((", scoreboard);
 
   useEffect(() => {
     const ref = imgRef.current;
@@ -128,7 +126,10 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
           />
         ))}
       </div>
-      <MatchLog start={start} eventLog={eventLog} round={roundIndex + 1} />
+      <div>
+        <Scoreboard players={players} scoreboard={scoreboard} />
+        <MatchLog start={start} eventLog={eventLog} round={roundIndex + 1} />
+      </div>
     </div>
   );
 };
