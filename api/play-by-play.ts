@@ -4,12 +4,12 @@ import { CSTeam, MapMeta } from "./events/types";
 export type RoundData = Array<ReturnType<typeof eventParser>>;
 
 export interface PlayByPlay {
-  map: {
-    name: string;
-    url: string;
-    urlLower: string;
-    meta: MapMeta;
-  };
+  // map: {
+  //   name: string;
+  //   url: string;
+  //   urlLower: string;
+  //   meta: MapMeta;
+  // };
   players: Record<string, CSTeam>;
   rounds: Array<RoundData>;
   teams: Record<CSTeam, string>;
@@ -27,13 +27,17 @@ export const playByPlay = (match: string) => {
   }>(
     (acc, e) => {
       const parsedEvent = eventParser(e);
+
       if (parsedEvent.type === "player-team") {
-        acc.players[parsedEvent.data.player] = parsedEvent.data.toTeam;
+        if (parsedEvent.data) {
+          acc.players[parsedEvent.data.player] = parsedEvent.data.toTeam;
+        }
       }
 
       if (parsedEvent.type === "team-faction") {
-        console.log(parsedEvent);
-        acc.teams[parsedEvent.data.teamSide] = parsedEvent.data.teamName;
+        if (parsedEvent.data) {
+          acc.teams[parsedEvent.data.teamSide] = parsedEvent.data.teamName;
+        }
       }
 
       return acc;
@@ -50,9 +54,9 @@ export const playByPlay = (match: string) => {
 
   const grouped = eventsFromMatchStart.reduce(
     (acc, ev) => {
-      const match = ev.match(/^(\d{2}\/\d{2}\/\d{4} - \d{2}:\d{2}:\d{2}:\s)/);
+      // const match = ev.match(/^(\d{2}\/\d{2}\/\d{4} - \d{2}:\d{2}:\d{2}:\s)/);
 
-      const date = match[0];
+      // const date = match[0];
       const parsedEvent = eventParser(ev);
 
       if (parsedEvent.type === "other") {
@@ -62,9 +66,10 @@ export const playByPlay = (match: string) => {
       if (parsedEvent.type === "map-select") {
         return {
           ...acc,
-          map: {
-            name: parsedEvent.data.map,
-          },
+          // map: {
+          //   name: parsedEvent.data.map,
+          //   meta:
+          // },
         };
       }
 

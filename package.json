@@ -9,7 +9,8 @@
     "dev": "pnpm run dev:app & pnpm run dev:api",
     "start:app": "pnpm --filter app start",
     "start:api": "pnpm --filter api start",
-    "start": "pnpm run start:app & pnpm run start:api"
+    "build:app": "pnpm --filter app build",
+    "start": "pnpm run build:app && pnpm run start:app & pnpm run start:api"
   },
   "keywords": [],
   "author": "",

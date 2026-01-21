@@ -15,7 +15,7 @@ export default function Home() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black ">
+      <div className="flex min-h-screen items-center justify-center bg-gray-700 font-sans ">
         <MapProvider />
       </div>
     </QueryClientProvider>

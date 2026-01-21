@@ -11,14 +11,16 @@ export interface Player {
   name: string;
   pos: number[];
   team: CSTeam;
+  dead: boolean;
 }
 
-const getPlayersBaseState = (players: string[], team: CSTeam) => {
+const getPlayersBaseState = (players: string[], team: CSTeam): Player[] => {
   return players.map((player, index) => ({
     id: player || "",
     name: player || "",
     pos: team === "CT" ? getCTSpawn(index) : getTSpawn(index),
     team,
+    dead: false,
   }));
 };
 
@@ -59,6 +61,7 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
 
   const changeRound = (newRoundIndex: number) => {
     const halftime = 14;
+    // switch teams on halftime
     if (
       (roundIndex <= halftime && newRoundIndex > halftime) ||
       (roundIndex > halftime && newRoundIndex <= halftime)
@@ -87,6 +90,8 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
         ),
       ]);
     }
+
+    // Clear state
     setRoundIndex(newRoundIndex);
     setEventLog([]);
     setStart(false);
@@ -110,8 +115,6 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
     );
 
     setScoreboard(total);
-
-    console.log("@@", players);
   };
 
   const resetRound = () => {
