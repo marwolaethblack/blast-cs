@@ -54,18 +54,24 @@ export const Scoreboard: FunctionComponent<Props> = ({
 
   return (
     <div>
-      CT {teams["CT"]}
       <Table
+        id="ct"
+        title={() => `CT ${teams["CT"]}`}
         size="small"
         columns={columns}
-        dataSource={ct.map((p) => ({ ...scoreboard[p], player: p }))}
+        dataSource={ct
+          .map((p) => ({ ...scoreboard[p], player: p }))
+          .sort((a, b) => (a.kills > b.kills ? -1 : 1))}
         pagination={false}
       />
-      Terrorist {teams["TERRORIST"]}
       <Table
+        id="t"
+        title={() => `Terrorists ${teams["CT"]}`}
         size="small"
         columns={columns}
-        dataSource={terrorists.map((p) => ({ ...scoreboard[p], player: p }))}
+        dataSource={terrorists
+          .map((p) => ({ ...scoreboard[p], player: p }))
+          .sort((a, b) => (a.kills > b.kills ? -1 : 1))}
         pagination={false}
       />
     </div>
