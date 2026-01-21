@@ -14,6 +14,7 @@ const app = express();
 
 app.use(cors());
 app.use(compression());
+app.use(express.static("out"));
 
 app.get("/play-by-play", (req, res) => {
   res.json(playByPlay(match));
