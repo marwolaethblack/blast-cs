@@ -12,7 +12,7 @@ export interface PlayByPlay {
   };
   players: Record<string, CSTeam>;
   rounds: Array<RoundData>;
-  teams: Record<string, CSTeam>;
+  teams: Record<CSTeam, string>;
 }
 
 export const playByPlay = (match: string) => {
@@ -33,7 +33,7 @@ export const playByPlay = (match: string) => {
 
       if (parsedEvent.type === "team-faction") {
         console.log(parsedEvent);
-        acc.teams[parsedEvent.data.teamName] = parsedEvent.data.teamSide;
+        acc.teams[parsedEvent.data.teamSide] = parsedEvent.data.teamName;
       }
 
       return acc;

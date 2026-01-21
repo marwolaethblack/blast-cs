@@ -1,15 +1,7 @@
-import {
-  RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CSTeam } from "../../../api/events/types";
 import { match } from "ts-pattern";
-import { PlayByPlay, RoundData } from "../../../api/play-by-play";
-import { throttle } from "@tanstack/react-pacer";
+import { PlayByPlay } from "../../../api/play-by-play";
 import { Parsed } from "../../../api/event-parsers";
 import { getCTSpawn, getTSpawn } from "../utils/spawns";
 import { getScoreForRound, mergeScoreBoards } from "./useScoreBoard";
@@ -19,16 +11,16 @@ export interface Player {
   name: string;
   pos: number[];
   team: CSTeam;
-  dead: boolean;
 }
 
-interface PlayerStats {
-  kills: number;
-  deaths: number;
-  damage: number;
-}
-
-type Scoreboard = Record<CSTeam, Record<string, PlayerStats>>;
+const getPlayersBaseState = (players: string[], team: CSTeam) => {
+  return players.map((player, index) => ({
+    id: player || "",
+    name: player || "",
+    pos: team === "CT" ? getCTSpawn(index) : getTSpawn(index),
+    team,
+  }));
+};
 
 export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
   const playersInTeams = useMemo(
@@ -45,21 +37,8 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
 
   const playersBaseState: Array<Player> = useMemo(() => {
     return [
-      ...playersInTeams.CT.map((player, index) => ({
-        id: player || "",
-        name: player || "",
-        pos: getCTSpawn(index),
-        team: "CT" as CSTeam,
-        dead: false,
-      })),
-
-      ...playersInTeams.TERRORIST.map((player, index) => ({
-        id: player || "",
-        name: player || "",
-        pos: getTSpawn(index),
-        team: "TERRORIST" as CSTeam,
-        dead: false,
-      })),
+      ...getPlayersBaseState(playersInTeams.CT, "CT"),
+      ...getPlayersBaseState(playersInTeams.TERRORIST, "TERRORIST"),
     ];
   }, [playersInTeams]);
 
@@ -67,26 +46,55 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
   const [speed, setSpeed] = useState(1);
   const [start, setStart] = useState(false);
 
+  const [teams, setTeams] = useState(playByPlay.teams);
   const [players, setPlayers] = useState<Array<Player>>(playersBaseState);
   const [shots, setShots] = useState<
     Array<{ id: string; attacker: string; victim: string }>
   >([]);
-  const [eventLog, setEventLog] = useState<Parsed[]>([]);
 
+  const [eventLog, setEventLog] = useState<Parsed[]>([]);
   const [scoreboard, setScoreboard] = useState(
     getScoreForRound(playersBaseState.map((p) => p.name)),
   );
 
-  const changeRound = (roundIndex: number) => {
-    setPlayers(playersBaseState);
-    setRoundIndex(roundIndex);
+  const changeRound = (newRoundIndex: number) => {
+    const halftime = 14;
+    if (
+      (roundIndex <= halftime && newRoundIndex > halftime) ||
+      (roundIndex > halftime && newRoundIndex <= halftime)
+    ) {
+      setTeams((prev) => ({ ...prev, CT: prev.TERRORIST, TERRORIST: prev.CT }));
+
+      setPlayers((prev) => [
+        ...getPlayersBaseState(
+          prev.filter((p) => p.team === "CT").map((p) => p.name),
+          "TERRORIST",
+        ),
+        ...getPlayersBaseState(
+          prev.filter((p) => p.team === "TERRORIST").map((p) => p.name),
+          "CT",
+        ),
+      ]);
+    } else {
+      setPlayers((prev) => [
+        ...getPlayersBaseState(
+          prev.filter((p) => p.team === "CT").map((p) => p.name),
+          "CT",
+        ),
+        ...getPlayersBaseState(
+          prev.filter((p) => p.team === "TERRORIST").map((p) => p.name),
+          "TERRORIST",
+        ),
+      ]);
+    }
+    setRoundIndex(newRoundIndex);
     setEventLog([]);
     setStart(false);
     setShots([]);
     entryIndexRef.current = 0;
 
     const scoresForPreviousRounds = playByPlay.rounds
-      .slice(0, roundIndex)
+      .slice(0, newRoundIndex)
       .map((r) =>
         getScoreForRound(
           playersBaseState.map((p) => p.name),
@@ -102,124 +110,137 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
     );
 
     setScoreboard(total);
+
+    console.log("@@", players);
   };
 
   const resetRound = () => {
     changeRound(roundIndex);
   };
 
-  const handleEvent = useCallback((e: Parsed) => {
-    match(e)
-      .with({ type: "player-team" }, (val) => {
-        const { data } = val;
-        setPlayers((prev) =>
-          prev.map((p) => {
-            if (p.id === data?.player) {
-              return { ...p, team: data.toTeam, pos: [0, 0, 0] };
+  const handleEvent = useCallback(
+    (e: Parsed) => {
+      match(e)
+        .with({ type: "attack" }, (val) => {
+          const { data } = val;
+          if (data) {
+            const { attacker, victim } = data;
+            setShots((prev) => [
+              ...prev,
+              {
+                attacker: attacker.name,
+                victim: victim.name,
+                id: val.raw,
+              },
+            ]);
+
+            const attackerZ = [...attacker.position].pop() || 0;
+            const victimZ = [...victim.position].pop() || 0;
+
+            if (attackerZ <= -445 || victimZ <= -445) {
+              //bottom map
+            } else {
+              //top map
             }
 
-            return p;
-          }),
-        );
-      })
-      .with({ type: "attack" }, (val) => {
-        const { data } = val;
-        if (data) {
-          const { attacker, victim } = data;
-          setShots((prev) => [
-            ...prev,
-            {
-              attacker: attacker.name,
-              victim: victim.name,
-              id: val.raw,
-            },
-          ]);
+            setScoreboard((prev) =>
+              mergeScoreBoards(
+                prev,
+                getScoreForRound(
+                  playersBaseState.map((p) => p.name),
+                  [val],
+                ),
+              ),
+            );
 
-          const attackerZ = [...attacker.position].pop() || 0;
-          const victimZ = [...victim.position].pop() || 0;
+            const team = data?.attacker.team;
+            const name = data?.attacker.name;
 
-          if (attackerZ <= -445 || victimZ <= -445) {
-            //bottom map
-          } else {
-            //top map
+            if (team && name) {
+              // setScoreboard((prev) => ({
+              //   ...prev,
+              //   [team]: {
+              //     ...prev[team],
+              //     [name]: {
+              //       ...prev[team][name],
+              //       damage: prev[team][name].damage + data.damage,
+              //     },
+              //   },
+              // }));
+            }
+
+            setPlayers((prev) =>
+              prev.map((p) => {
+                if (p.id === attacker.name) {
+                  return { ...p, pos: attacker.position };
+                }
+
+                if (p.id === victim.name) {
+                  return { ...p, pos: victim.position };
+                }
+
+                return p;
+              }),
+            );
           }
+        })
+        .with({ type: "kill" }, (val) => {
+          const { data } = val;
+          if (data) {
+            setShots((prev) => [
+              ...prev,
+              {
+                attacker: data.killer.name,
+                victim: data.victim.name,
+                id: val.raw,
+              },
+            ]);
 
-          const team = data?.attacker.team;
-          const name = data?.attacker.name;
+            const team = data?.killer.team;
+            const name = data?.killer.name;
 
-          if (team && name) {
-            // setScoreboard((prev) => ({
-            //   ...prev,
-            //   [team]: {
-            //     ...prev[team],
-            //     [name]: {
-            //       ...prev[team][name],
-            //       damage: prev[team][name].damage + data.damage,
-            //     },
-            //   },
-            // }));
+            setScoreboard((prev) =>
+              mergeScoreBoards(
+                prev,
+                getScoreForRound(
+                  playersBaseState.map((p) => p.name),
+                  [val],
+                ),
+              ),
+            );
+
+            if (team && name) {
+              // setScoreboard((prev) => ({
+              //   ...prev,
+              //   [team]: {
+              //     ...prev[team],
+              //     [name]: {
+              //       ...prev[team][name],
+              //       kills: prev[team][name].kills + 1,
+              //     },
+              //   },
+              // }));
+            }
+
+            setPlayers((prev) =>
+              prev.map((p) => {
+                if (p.id === data?.killer.name) {
+                  return { ...p, pos: data.killer.position };
+                }
+
+                if (p.id === data?.victim.name) {
+                  return { ...p, pos: data.victim.position, dead: true };
+                }
+
+                return p;
+              }),
+            );
           }
-
-          setPlayers((prev) =>
-            prev.map((p) => {
-              if (p.id === attacker.name) {
-                return { ...p, pos: attacker.position };
-              }
-
-              if (p.id === victim.name) {
-                return { ...p, pos: victim.position };
-              }
-
-              return p;
-            }),
-          );
-        }
-      })
-      .with({ type: "kill" }, (val) => {
-        const { data } = val;
-        if (data) {
-          setShots((prev) => [
-            ...prev,
-            {
-              attacker: data.killer.name,
-              victim: data.victim.name,
-              id: val.raw,
-            },
-          ]);
-
-          const team = data?.killer.team;
-          const name = data?.killer.name;
-
-          if (team && name) {
-            // setScoreboard((prev) => ({
-            //   ...prev,
-            //   [team]: {
-            //     ...prev[team],
-            //     [name]: {
-            //       ...prev[team][name],
-            //       kills: prev[team][name].kills + 1,
-            //     },
-            //   },
-            // }));
-          }
-
-          setPlayers((prev) =>
-            prev.map((p) => {
-              if (p.id === data?.killer.name) {
-                return { ...p, pos: data.killer.position };
-              }
-
-              if (p.id === data?.victim.name) {
-                return { ...p, pos: data.victim.position, dead: true };
-              }
-
-              return p;
-            }),
-          );
-        }
-      })
-      .otherwise(() => null);
-  }, []);
+        })
+        .otherwise(() => null);
+    },
+    [playersBaseState],
+  );
 
   const intervalRef = useRef<NodeJS.Timeout>(undefined);
   const entryIndexRef = useRef<number>(0);
@@ -239,7 +260,7 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
         setEventLog((prev) => [...prev, round[index]]);
         [round[index]].map(handleEvent);
         entryIndexRef.current++;
-      }, 1000 / speed);
+      }, 500 / speed);
     }
 
     return () => clearInterval(intervalRef.current);
@@ -257,5 +278,6 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
     speed,
     setSpeed,
     shots,
+    teams,
   };
 };

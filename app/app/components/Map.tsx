@@ -33,6 +33,7 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
     speed,
     setSpeed,
     shots,
+    teams,
   } = usePlayByPlay({
     playByPlay,
   });
@@ -127,7 +128,7 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
         ))}
       </div>
       <div>
-        <Scoreboard players={players} scoreboard={scoreboard} />
+        <Scoreboard players={players} scoreboard={scoreboard} teams={teams} />
         <MatchLog start={start} eventLog={eventLog} round={roundIndex + 1} />
       </div>
     </div>
