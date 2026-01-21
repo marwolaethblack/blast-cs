@@ -1,0 +1,21 @@
+{
+  "name": "blast",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev:app": "pnpm --filter app dev",
+    "dev:api": "pnpm --filter api start",
+    "dev": "pnpm run dev:app & pnpm run dev:api",
+    "start:app": "pnpm --filter app start",
+    "start:api": "pnpm --filter api start",
+    "start": "pnpm run start:app & pnpm run start:api"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.28.0",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
