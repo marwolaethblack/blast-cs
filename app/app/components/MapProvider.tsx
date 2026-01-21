@@ -7,7 +7,9 @@ export const MapProvider = () => {
   const query = useQuery<PlayByPlay>({
     queryKey: ["play-by-play"],
     queryFn: async () => {
-      const response = await fetch("http://localhost:3333/play-by-play");
+      const response = await fetch(
+        `http://localhost:${process.env.PORT || 4000}/play-by-play`,
+      );
       return await response.json();
     },
   });
