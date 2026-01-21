@@ -23,7 +23,7 @@ export const playByPlay = (match: string) => {
 
   const initialPlayersWithTeams = eventsBeforeMatchStart.reduce<{
     players: Record<string, CSTeam>;
-    teams: Record<string, CSTeam>;
+    teams: Record<CSTeam, string>;
   }>(
     (acc, e) => {
       const parsedEvent = eventParser(e);
@@ -38,7 +38,10 @@ export const playByPlay = (match: string) => {
 
       return acc;
     },
-    { players: {}, teams: {} },
+    {
+      players: {},
+      teams: { TERRORIST: "", CT: "", Unassigned: "", Spectator: "" },
+    },
   );
 
   const eventsFromMatchStart = events.slice(lastMatchStart, undefined);
