@@ -4,7 +4,7 @@ import cors from "cors";
 import { playByPlay } from "./play-by-play";
 import compression from "compression";
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT || 10000;
 
 const res = fs.readFileSync("./NAVIvsVitaGF-Nuke.txt");
 
