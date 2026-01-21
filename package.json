@@ -11,7 +11,7 @@
     "start:api": "pnpm --filter api start",
     "build:app": "pnpm --filter app build",
     "start": "pnpm run build:app && pnpm run start:app & pnpm run start:api",
-    "start:prod": "pnpm run build:app && cp -r ./app/out ./api/out && pnpm run start:api"
+    "start:prod": "pnpm run start:api"
   },
   "keywords": [],
   "author": "",
