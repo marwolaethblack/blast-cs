@@ -127,7 +127,7 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
           />
         ))}
       </div>
-      <div>
+      <div className="flex flex-col gap-2">
         <Scoreboard players={players} scoreboard={scoreboard} teams={teams} />
         <MatchLog start={start} eventLog={eventLog} round={roundIndex + 1} />
       </div>
