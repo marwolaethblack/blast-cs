@@ -56,66 +56,91 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
 
   const [eventLog, setEventLog] = useState<Parsed[]>([]);
   const [scoreboard, setScoreboard] = useState(
-    getScoreForRound(playersBaseState.map((p) => p.name)),
+    getScoreForRound(
+      playersBaseState.map((p) => p.name),
+      teams,
+    ),
   );
 
-  const changeRound = (newRoundIndex: number) => {
-    const halftime = 14;
-    // switch teams on halftime
-    if (
-      (roundIndex <= halftime && newRoundIndex > halftime) ||
-      (roundIndex > halftime && newRoundIndex <= halftime)
-    ) {
-      setTeams((prev) => ({ ...prev, CT: prev.TERRORIST, TERRORIST: prev.CT }));
+  const switchTeams = (teams: Record<CSTeam, string>) => {
+    return {
+      ...teams,
+      CT: teams.TERRORIST,
+      TERRORIST: teams.CT,
+    };
+  };
 
-      setPlayers((prev) => [
-        ...getPlayersBaseState(
-          prev.filter((p) => p.team === "CT").map((p) => p.name),
-          "TERRORIST",
-        ),
-        ...getPlayersBaseState(
-          prev.filter((p) => p.team === "TERRORIST").map((p) => p.name),
-          "CT",
-        ),
-      ]);
-    } else {
-      setPlayers((prev) => [
-        ...getPlayersBaseState(
-          prev.filter((p) => p.team === "CT").map((p) => p.name),
-          "CT",
-        ),
-        ...getPlayersBaseState(
-          prev.filter((p) => p.team === "TERRORIST").map((p) => p.name),
-          "TERRORIST",
-        ),
-      ]);
-    }
+  const changeRound = useCallback(
+    (newRoundIndex: number) => {
+      const halftime = 14;
 
-    // Clear state
-    setRoundIndex(newRoundIndex);
-    setEventLog([]);
-    setStart(false);
-    setShots([]);
-    entryIndexRef.current = 0;
+      let newTeams = teams;
+      // switch teams on halftime
+      if (
+        (roundIndex <= halftime && newRoundIndex > halftime) ||
+        (roundIndex > halftime && newRoundIndex <= halftime)
+      ) {
+        setTeams(switchTeams);
 
-    const scoresForPreviousRounds = playByPlay.rounds
-      .slice(0, newRoundIndex)
-      .map((r) =>
+        newTeams = switchTeams(teams);
+
+        setPlayers((prev) => [
+          ...getPlayersBaseState(
+            prev.filter((p) => p.team === "CT").map((p) => p.name),
+            "TERRORIST",
+          ),
+          ...getPlayersBaseState(
+            prev.filter((p) => p.team === "TERRORIST").map((p) => p.name),
+            "CT",
+          ),
+        ]);
+      } else {
+        setPlayers((prev) => [
+          ...getPlayersBaseState(
+            prev.filter((p) => p.team === "CT").map((p) => p.name),
+            "CT",
+          ),
+          ...getPlayersBaseState(
+            prev.filter((p) => p.team === "TERRORIST").map((p) => p.name),
+            "TERRORIST",
+          ),
+        ]);
+      }
+
+      // Clear state
+      setRoundIndex(newRoundIndex);
+      setEventLog([]);
+      setStart(false);
+      setShots([]);
+      entryIndexRef.current = 0;
+
+      const scoresForPreviousRounds = playByPlay.rounds
+        .slice(0, newRoundIndex)
+        .map((r, i) =>
+          getScoreForRound(
+            playersBaseState.map((p) => p.name),
+            // Switch teams back for indexes before halftime
+            newRoundIndex > halftime && i <= halftime
+              ? switchTeams(newTeams)
+              : newTeams,
+            r,
+          ),
+        );
+
+      const total = scoresForPreviousRounds.reduce(
+        (acc, scoreboard) => {
+          return mergeScoreBoards(acc, scoreboard);
+        },
         getScoreForRound(
           playersBaseState.map((p) => p.name),
-          r,
+          newTeams,
         ),
       );
 
-    const total = scoresForPreviousRounds.reduce(
-      (acc, scoreboard) => {
-        return mergeScoreBoards(acc, scoreboard);
-      },
-      getScoreForRound(playersBaseState.map((p) => p.name)),
-    );
-
-    setScoreboard(total);
-  };
+      setScoreboard(total);
+    },
+    [playByPlay.rounds, playersBaseState, roundIndex, teams],
+  );
 
   const resetRound = () => {
     changeRound(roundIndex);
@@ -151,6 +176,7 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
                 prev,
                 getScoreForRound(
                   playersBaseState.map((p) => p.name),
+                  teams,
                   [val],
                 ),
               ),
@@ -199,31 +225,16 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
               },
             ]);
 
-            const team = data?.killer.team;
-            const name = data?.killer.name;
-
             setScoreboard((prev) =>
               mergeScoreBoards(
                 prev,
                 getScoreForRound(
                   playersBaseState.map((p) => p.name),
+                  teams,
                   [val],
                 ),
               ),
             );
-
-            if (team && name) {
-              // setScoreboard((prev) => ({
-              //   ...prev,
-              //   [team]: {
-              //     ...prev[team],
-              //     [name]: {
-              //       ...prev[team][name],
-              //       kills: prev[team][name].kills + 1,
-              //     },
-              //   },
-              // }));
-            }
 
             setPlayers((prev) =>
               prev.map((p) => {
@@ -242,7 +253,7 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
         })
         .otherwise(() => null);
     },
-    [playersBaseState],
+    [playersBaseState, teams],
   );
 
   const intervalRef = useRef<NodeJS.Timeout>(undefined);

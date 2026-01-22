@@ -1,3 +1,4 @@
+import { CSTeam } from "../../../api/events/types";
 import { RoundData } from "../../../api/play-by-play";
 import { match } from "ts-pattern";
 
@@ -10,18 +11,30 @@ interface PlayerScore {
 
 type PlayerId = string;
 
-export type ScoreBoard = Record<PlayerId, PlayerScore>;
+export type ScoreBoard = {
+  teamScores: Record<string, number>;
+  playerScores: Record<PlayerId, PlayerScore>;
+};
 
-export const getScoreForRound = (players: string[], round?: RoundData) => {
-  const emptyScoreBoard = players.reduce<ScoreBoard>((acc, p) => {
-    acc[p] = {
-      assists: 0,
-      damage: 0,
-      kills: 0,
-      deaths: 0,
-    };
-    return acc;
-  }, {});
+export const getScoreForRound = (
+  players: string[],
+  teams: Record<CSTeam, string>,
+  round?: RoundData,
+) => {
+  const emptyScoreBoard = players.reduce<ScoreBoard>(
+    (acc, p) => {
+      acc.playerScores[p] = {
+        assists: 0,
+        damage: 0,
+        kills: 0,
+        deaths: 0,
+      };
+      return acc;
+    },
+    { teamScores: {}, playerScores: {} },
+  );
+
+  Object.values(teams).forEach((t) => (emptyScoreBoard.teamScores[t] = 0));
 
   if (!round) {
     return emptyScoreBoard;
@@ -40,9 +53,9 @@ export const getScoreForRound = (players: string[], round?: RoundData) => {
       match(round)
         .with({ type: "attack" }, ({ data }) => {
           if (data) {
-            const attackerData = acc[data.attacker.name] || {};
+            const attackerData = acc.playerScores[data.attacker.name] || {};
 
-            acc[data.attacker.name] = {
+            acc.playerScores[data.attacker.name] = {
               ...attackerData,
               damage: attackerData.damage + data.damage + data.armorDamage,
             };
@@ -56,29 +69,59 @@ export const getScoreForRound = (players: string[], round?: RoundData) => {
 
             return acc;
           }
+          return acc;
         })
         .with({ type: "kill" }, ({ data }) => {
           if (data) {
-            acc[data.killer.name].kills++;
+            acc.playerScores[data.killer.name].kills++;
 
-            acc[data.victim.name].deaths++;
+            acc.playerScores[data.victim.name].deaths++;
 
             assistTracker[data.victim.name]
               ?.filter((attacker) => attacker !== data.killer.name)
               .forEach((attacker) => {
-                acc[attacker].assists++;
+                acc.playerScores[attacker].assists++;
               });
 
             return acc;
           }
+          return acc;
+        })
+        .with({ type: "ct-win" }, () => {
+          const ctTeam = teams["CT"];
+          acc.teamScores[ctTeam]++;
+
+          return acc;
+        })
+        .with({ type: "bomb-defused" }, () => {
+          const ctTeam = teams["CT"];
+          acc.teamScores[ctTeam]++;
+          return acc;
+        })
+        .with({ type: "terrorists-win" }, () => {
+          const tTeam = teams["TERRORIST"];
+          acc.teamScores[tTeam]++;
+
+          return acc;
+        })
+        .with({ type: "target-bombed" }, () => {
+          const tTeam = teams["TERRORIST"];
+          acc.teamScores[tTeam]++;
+
+          return acc;
         })
         .otherwise(() => acc) || acc
     );
   }, emptyScoreBoard);
 };
 
-export const mergeScoreBoards = (board1: ScoreBoard, board2: ScoreBoard) => {
-  return Object.entries(board1).reduce<ScoreBoard>((acc, [player, score]) => {
+export const mergeScoreBoards = (
+  board1: ScoreBoard,
+  board2: ScoreBoard,
+): ScoreBoard => {
+  const mergedPlayerScores = Object.entries(board1.playerScores).reduce<
+    ScoreBoard["playerScores"]
+  >((acc, [player, score]) => {
     acc[player] = {
       assists: (acc[player].assists || 0) + (score.assists || 0),
       kills: (acc[player].kills || 0) + (score.kills || 0),
@@ -87,5 +130,16 @@ export const mergeScoreBoards = (board1: ScoreBoard, board2: ScoreBoard) => {
     };
 
     return acc;
-  }, board2);
+  }, board2.playerScores);
+
+  const mergedTeamScores = Object.entries(board1.teamScores).reduce<
+    ScoreBoard["teamScores"]
+  >((acc, [team, score]) => {
+    return { ...acc, [team]: (acc[team] || 0) + score };
+  }, board2.teamScores);
+
+  return {
+    playerScores: mergedPlayerScores,
+    teamScores: mergedTeamScores,
+  };
 };

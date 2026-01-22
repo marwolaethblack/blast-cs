@@ -9,6 +9,8 @@ import { roundEndEvent } from "./events/round-end";
 import { bombPlantEvent } from "./events/bomb-plant";
 import { terroristsWinEvent } from "./events/terrorists-win";
 import { ctWinEvent } from "./events/ct-win";
+import { targetBombedEvent } from "./events/target-bombed";
+import { bombDefusedEvent } from "./events/bomb-defused";
 
 export type Parsed =
   | ReturnType<typeof connectEvent>
@@ -19,6 +21,8 @@ export type Parsed =
   | ReturnType<typeof bombPlantEvent>
   | ReturnType<typeof terroristsWinEvent>
   | ReturnType<typeof ctWinEvent>
+  | ReturnType<typeof targetBombedEvent>
+  | ReturnType<typeof bombDefusedEvent>
   | ReturnType<typeof mapSelectEvent>
   | ReturnType<typeof roundEndEvent>
   | { type: "other"; raw: string };
@@ -48,6 +52,12 @@ export const eventParser = (event: string): Parsed =>
     })
     .with(P.string.includes("SFUI_Notice_CTs_Win"), () => {
       return ctWinEvent(event);
+    })
+    .with(P.string.includes("SFUI_Notice_Target_Bombed"), () => {
+      return targetBombedEvent(event);
+    })
+    .with(P.string.includes("SFUI_Notice_Bomb_Defused"), () => {
+      return bombDefusedEvent(event);
     })
     .with(P.string.includes('World triggered "Match_Start" on'), () => {
       return mapSelectEvent(event);
