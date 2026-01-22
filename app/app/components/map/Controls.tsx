@@ -25,7 +25,11 @@ export const Controls: FunctionComponent<Props> = ({
   return (
     <div className="w-[280px] flex flex-col gap-2">
       <div className="flex gap-2">
-        <Button disabled={round === 0} onClick={() => changeRound(round - 1)}>
+        <Button
+          disabled={round === 0}
+          onClick={() => changeRound(round - 1)}
+          className="disabled:bg-white!"
+        >
           {"<"}
         </Button>
         <Select
@@ -38,6 +42,7 @@ export const Controls: FunctionComponent<Props> = ({
           value={round}
         />
         <Button
+          className="disabled:bg-white!"
           disabled={round === rounds.length - 1}
           onClick={() => changeRound(round + 1)}
         >
@@ -57,7 +62,8 @@ export const Controls: FunctionComponent<Props> = ({
         <div className="flex gap-2 items-center ml-auto">
           <Button
             variant="solid"
-            className="disabled:bg-white"
+            className="disabled:bg-white!"
+            disabled={speed <= 0.25}
             onClick={() => setSpeed((prev) => prev - 0.25)}
           >
             -
@@ -65,6 +71,8 @@ export const Controls: FunctionComponent<Props> = ({
           <span className="font-medium">{speed}x</span>
           <Button
             variant="solid"
+            className="disabled:bg-white!"
+            disabled={speed >= 2.5}
             onClick={() => setSpeed((prev) => prev + 0.25)}
           >
             +

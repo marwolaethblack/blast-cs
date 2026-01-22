@@ -54,12 +54,9 @@ export const playByPlay = (match: string) => {
 
   const grouped = eventsFromMatchStart.reduce(
     (acc, ev) => {
-      // const match = ev.match(/^(\d{2}\/\d{2}\/\d{4} - \d{2}:\d{2}:\d{2}:\s)/);
-
-      // const date = match[0];
       const parsedEvent = eventParser(ev);
 
-      if (parsedEvent.type === "other") {
+      if (parsedEvent.type === "other" || parsedEvent.type === "team-faction") {
         return acc;
       }
 
@@ -68,7 +65,7 @@ export const playByPlay = (match: string) => {
           ...acc,
           // map: {
           //   name: parsedEvent.data.map,
-          //   meta:
+          //   meta: {}
           // },
         };
       }
