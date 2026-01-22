@@ -1,14 +1,13 @@
 "use client";
 import { FunctionComponent } from "react";
-import Image from "next/image";
-import { PlayerDot } from "./player/PlayerDot";
+import { PlayerDot } from "../player/PlayerDot";
 import { useEffect, useRef, useState } from "react";
-import { PlayByPlay } from "../../../api/play-by-play";
-import { usePlayByPlay } from "../hooks/usePlayByPlay";
-import { Arrow } from "./Arrow";
-import { MatchLog } from "./match/MatchLog";
-import { Controls } from "./map/Controls";
-import { Scoreboard } from "./match/Scoreboard";
+import { PlayByPlay } from "../../../../api/play-by-play";
+import { usePlayByPlay } from "../../hooks/usePlayByPlay";
+import { Arrow } from "../Arrow";
+import { MatchLog } from "../match/MatchLog";
+import { Controls } from "./Controls";
+import { Scoreboard } from "../match/Scoreboard";
 
 interface Props {
   playByPlay: PlayByPlay;
@@ -33,6 +32,8 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
     setSpeed,
     shots,
     teams,
+    mapLevel,
+    map,
   } = usePlayByPlay({
     playByPlay,
   });
@@ -71,8 +72,6 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
     setUpdateTrigger((prev) => prev + 1);
   }, [players, shots]);
 
-  // z = -445 lower levele
-
   return (
     <div className="flex flex-col gap-2 lg:flex-row">
       <div className="relative w-full ">
@@ -93,9 +92,9 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
         </div>
         {/*  eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/overviews/de_nuke_radar.png"
+          src={map}
           alt="Match map"
-          className="min-w-[512px] min-h-[512px]"
+          className="min-w-[400px] min-h-[400px]"
           width={1024}
           height={1024}
           ref={imgRef}

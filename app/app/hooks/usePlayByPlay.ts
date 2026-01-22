@@ -4,7 +4,8 @@ import { match } from "ts-pattern";
 import { PlayByPlay } from "../../../api/play-by-play";
 import { Parsed } from "../../../api/event-parsers";
 import { getCTSpawn, getTSpawn } from "../utils/spawns";
-import { getScoreForRound, mergeScoreBoards } from "./useScoreBoard";
+import { getScoreForRound, mergeScoreBoards } from "../utils/scoreBoard";
+import { useMap } from "./useMap";
 
 export interface Player {
   id: string;
@@ -47,6 +48,8 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
   const [roundIndex, setRoundIndex] = useState(0);
   const [speed, setSpeed] = useState(1);
   const [start, setStart] = useState(false);
+
+  const { changeMapLevel, map, mapLevel, resetMapLevel } = useMap();
 
   const [teams, setTeams] = useState(playByPlay.teams);
   const [players, setPlayers] = useState<Array<Player>>(playersBaseState);
@@ -112,6 +115,7 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
       setEventLog([]);
       setStart(false);
       setShots([]);
+      resetMapLevel();
       entryIndexRef.current = 0;
 
       const scoresForPreviousRounds = playByPlay.rounds
@@ -139,7 +143,7 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
 
       setScoreboard(total);
     },
-    [playByPlay.rounds, playersBaseState, roundIndex, teams],
+    [playByPlay.rounds, playersBaseState, resetMapLevel, roundIndex, teams],
   );
 
   const resetRound = () => {
@@ -165,11 +169,15 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
             const attackerZ = [...attacker.position].pop() || 0;
             const victimZ = [...victim.position].pop() || 0;
 
-            if (attackerZ <= -445 || victimZ <= -445) {
-              //bottom map
-            } else {
-              //top map
-            }
+            changeMapLevel([attackerZ, victimZ]);
+
+            // if (attackerZ <= -445 || victimZ <= -445) {
+            //   //bottom map
+            //   setMapLevel("bot");
+            // } else {
+            //   //top map
+            //   setMapLevel("top");
+            // }
 
             setScoreboard((prev) =>
               mergeScoreBoards(
@@ -200,14 +208,28 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
         .with({ type: "kill" }, (val) => {
           const { data } = val;
           if (data) {
+            const { killer, victim } = data;
             setShots((prev) => [
               ...prev,
               {
-                attacker: data.killer.name,
-                victim: data.victim.name,
+                attacker: killer.name,
+                victim: victim.name,
                 id: val.raw,
               },
             ]);
+
+            const attackerZ = [...killer.position].pop() || 0;
+            const victimZ = [...victim.position].pop() || 0;
+
+            changeMapLevel([attackerZ, victimZ]);
+
+            // if (attackerZ <= -445 || victimZ <= -445) {
+            //   //bottom map
+            //   setMapLevel("bot");
+            // } else {
+            //   //top map
+            //   setMapLevel("top");
+            // }
 
             setScoreboard((prev) =>
               mergeScoreBoards(
@@ -222,12 +244,12 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
 
             setPlayers((prev) =>
               prev.map((p) => {
-                if (p.id === data?.killer.name) {
-                  return { ...p, pos: data.killer.position };
+                if (p.id === killer.name) {
+                  return { ...p, pos: killer.position };
                 }
 
-                if (p.id === data?.victim.name) {
-                  return { ...p, pos: data.victim.position, dead: true };
+                if (p.id === victim.name) {
+                  return { ...p, pos: victim.position, dead: true };
                 }
 
                 return p;
@@ -255,7 +277,7 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
         )
         .otherwise(() => null);
     },
-    [playersBaseState, teams],
+    [changeMapLevel, playersBaseState, teams],
   );
 
   const intervalRef = useRef<NodeJS.Timeout>(undefined);
@@ -295,5 +317,7 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
     setSpeed,
     shots,
     teams,
+    mapLevel,
+    map,
   };
 };

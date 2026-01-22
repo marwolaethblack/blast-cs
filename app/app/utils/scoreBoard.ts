@@ -87,24 +87,12 @@ export const getScoreForRound = (
           }
           return acc;
         })
-        .with({ type: "ct-win" }, () => {
-          const ctTeam = teams["CT"];
-          acc.teamScores[ctTeam]++;
-
-          return acc;
-        })
-        .with({ type: "bomb-defused" }, () => {
+        .with({ type: "bomb-defused" }, { type: "ct-win" }, () => {
           const ctTeam = teams["CT"];
           acc.teamScores[ctTeam]++;
           return acc;
         })
-        .with({ type: "terrorists-win" }, () => {
-          const tTeam = teams["TERRORIST"];
-          acc.teamScores[tTeam]++;
-
-          return acc;
-        })
-        .with({ type: "target-bombed" }, () => {
+        .with({ type: "target-bombed" }, { type: "terrorists-win" }, () => {
           const tTeam = teams["TERRORIST"];
           acc.teamScores[tTeam]++;
 

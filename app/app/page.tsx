@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MapProvider } from "./components/MapProvider";
+import { MapProvider } from "./components/map/MapProvider";
 
 export default function Home() {
   const [queryClient] = useState(() => new QueryClient());

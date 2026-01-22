@@ -1,9 +1,9 @@
 import { Player } from "@/app/hooks/usePlayByPlay";
-import { ScoreBoard } from "@/app/hooks/useScoreBoard";
+import { ScoreBoard } from "@/app/utils/scoreBoard";
 import { Table } from "antd";
 import { FunctionComponent, useMemo } from "react";
 import { CSTeam } from "../../../../api/events/types";
-import { teamColors, teamTextColors } from "@/app/utils/colors";
+import { teamTextColors } from "@/app/utils/colors";
 
 interface Props {
   scoreboard: ScoreBoard;
