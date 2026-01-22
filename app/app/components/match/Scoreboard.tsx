@@ -54,12 +54,13 @@ export const Scoreboard: FunctionComponent<Props> = ({
   ];
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-row lg:flex-col gap-2 w-full">
       <Table
+        className="w-full lg:w-auto lg:max-w-[350px]!"
         id="ct"
         title={() => (
           <span>
-            {scoreboard.teamScores[teams["CT"]]} -{" "}
+            Score: {scoreboard.teamScores[teams["CT"]]} -{" "}
             <span className={`${teamTextColors["CT"]} font-medium`}>
               Counter-Terrorists
             </span>{" "}
@@ -74,10 +75,11 @@ export const Scoreboard: FunctionComponent<Props> = ({
         pagination={false}
       />
       <Table
+        className="w-full lg:w-auto lg:max-w-[350px]!"
         id="t"
         title={() => (
           <span>
-            {scoreboard.teamScores[teams["TERRORIST"]]} -{" "}
+            Score: {scoreboard.teamScores[teams["TERRORIST"]]} -{" "}
             <span className={`${teamTextColors["TERRORIST"]} font-medium`}>
               Terrorists{" "}
             </span>{" "}

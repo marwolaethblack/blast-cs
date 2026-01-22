@@ -58,7 +58,7 @@ export const MatchEvent: FunctionComponent<Props> = ({ event }) => {
       .with({ type: "ct-win" }, () => {
         return (
           <div
-            className={`flex items-center gap-1 border border-solid border-green-600 text-lg`}
+            className={`flex items-center gap-1 border border-solid bg-green-800 w-full justify-center text-lg`}
           >
             <span className={`${teamTextColors["CT"]}`}>CT</span>
             win
@@ -68,7 +68,7 @@ export const MatchEvent: FunctionComponent<Props> = ({ event }) => {
       .with({ type: "bomb-defused" }, () => {
         return (
           <div
-            className={`flex items-center gap-1 border border-solid border-green-600 text-lg`}
+            className={`flex items-center gap-1 border border-solid bg-green-800 w-full justify-center text-lg`}
           >
             <span className={`${teamTextColors["CT"]}`}>CT</span>
             win by defusing the bomb
@@ -78,7 +78,7 @@ export const MatchEvent: FunctionComponent<Props> = ({ event }) => {
       .with({ type: "terrorists-win" }, () => {
         return (
           <div
-            className={`flex items-center gap-1 border border-solid border-green-600 text-lg`}
+            className={`flex items-center gap-1 border border-solid bg-green-800 w-full justify-center text-lg`}
           >
             <span className={`${teamTextColors["TERRORIST"]}`}>Terrorists</span>
             win
@@ -88,7 +88,7 @@ export const MatchEvent: FunctionComponent<Props> = ({ event }) => {
       .with({ type: "target-bombed" }, () => {
         return (
           <div
-            className={`flex items-center gap-1 border border-solid border-green-600 text-lg`}
+            className={`flex items-center gap-1 border border-solid bg-green-800 w-full justify-center text-lg`}
           >
             <span className={`${teamTextColors["TERRORIST"]}`}>Terrorists</span>
             win by bombing the target

@@ -74,8 +74,8 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
   // z = -445 lower levele
 
   return (
-    <div className="flex gap-2">
-      <div className="relative bg-amber-400 size-[1024px] flex-none">
+    <div className="flex flex-col gap-2 lg:flex-row">
+      <div className="relative w-full ">
         <div className="absolute left-[calc(50%-140px)] top-4">
           <Controls
             resetRound={resetRound}
@@ -91,9 +91,11 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
             changeRound={changeRound}
           />
         </div>
-        <Image
+        {/*  eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src="/overviews/de_nuke_radar.png"
           alt="Match map"
+          className="min-w-[512px] min-h-[512px]"
           width={1024}
           height={1024}
           ref={imgRef}

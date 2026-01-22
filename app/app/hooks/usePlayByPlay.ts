@@ -182,22 +182,6 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
               ),
             );
 
-            const team = data?.attacker.team;
-            const name = data?.attacker.name;
-
-            if (team && name) {
-              // setScoreboard((prev) => ({
-              //   ...prev,
-              //   [team]: {
-              //     ...prev[team],
-              //     [name]: {
-              //       ...prev[team][name],
-              //       damage: prev[team][name].damage + data.damage,
-              //     },
-              //   },
-              // }));
-            }
-
             setPlayers((prev) =>
               prev.map((p) => {
                 if (p.id === attacker.name) {
@@ -251,6 +235,24 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
             );
           }
         })
+        .with(
+          { type: "bomb-defused" },
+          { type: "ct-win" },
+          { type: "target-bombed" },
+          { type: "terrorists-win" },
+          (val) => {
+            setScoreboard((prev) =>
+              mergeScoreBoards(
+                prev,
+                getScoreForRound(
+                  playersBaseState.map((p) => p.name),
+                  teams,
+                  [val],
+                ),
+              ),
+            );
+          },
+        )
         .otherwise(() => null);
     },
     [playersBaseState, teams],
