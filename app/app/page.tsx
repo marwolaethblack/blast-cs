@@ -1,13 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Map } from "./components/Map";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MapProvider } from "./components/MapProvider";
 
 export default function Home() {

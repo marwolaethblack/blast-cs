@@ -5,7 +5,6 @@ import { PlayerDot } from "./player/PlayerDot";
 import { useEffect, useRef, useState } from "react";
 import { PlayByPlay } from "../../../api/play-by-play";
 import { usePlayByPlay } from "../hooks/usePlayByPlay";
-import { MatchEvent } from "./MatchEvent";
 import { Arrow } from "./Arrow";
 import { MatchLog } from "./match/MatchLog";
 import { Controls } from "./map/Controls";
@@ -77,7 +76,7 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
   return (
     <div className="flex gap-2">
       <div className="relative bg-amber-400 size-[1024px] flex-none">
-        <div className="absolute left-[50%] top-0">
+        <div className="absolute left-[calc(50%-140px)] top-4">
           <Controls
             resetRound={resetRound}
             setSpeed={setSpeed}
@@ -94,7 +93,7 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
         </div>
         <Image
           src="/overviews/de_nuke_radar.png"
-          alt="Next.js logo"
+          alt="Match map"
           width={1024}
           height={1024}
           ref={imgRef}

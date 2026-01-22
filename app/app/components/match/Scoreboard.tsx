@@ -3,6 +3,7 @@ import { ScoreBoard } from "@/app/hooks/useScoreBoard";
 import { Table } from "antd";
 import { FunctionComponent, useMemo } from "react";
 import { CSTeam } from "../../../../api/events/types";
+import { teamColors, teamTextColors } from "@/app/utils/colors";
 
 interface Props {
   scoreboard: ScoreBoard;
@@ -53,12 +54,18 @@ export const Scoreboard: FunctionComponent<Props> = ({
   ];
 
   return (
-    <div>
+    <div className="flex flex-col gap-2">
       <Table
         id="ct"
-        title={() =>
-          `${scoreboard.teamScores[teams["CT"]]} - CT ${teams["CT"]}`
-        }
+        title={() => (
+          <span>
+            {scoreboard.teamScores[teams["CT"]]} -{" "}
+            <span className={`${teamTextColors["CT"]} font-medium`}>
+              Counter-Terrorists
+            </span>{" "}
+            - {teams["CT"]}
+          </span>
+        )}
         size="small"
         columns={columns}
         dataSource={ct
@@ -68,9 +75,15 @@ export const Scoreboard: FunctionComponent<Props> = ({
       />
       <Table
         id="t"
-        title={() =>
-          `${scoreboard.teamScores[teams["TERRORIST"]]} - Terrorists ${teams["TERRORIST"]}`
-        }
+        title={() => (
+          <span>
+            {scoreboard.teamScores[teams["TERRORIST"]]} -{" "}
+            <span className={`${teamTextColors["TERRORIST"]} font-medium`}>
+              Terrorists{" "}
+            </span>{" "}
+            - {teams["TERRORIST"]}
+          </span>
+        )}
         size="small"
         columns={columns}
         dataSource={terrorists

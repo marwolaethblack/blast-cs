@@ -1,8 +1,8 @@
 import { FunctionComponent, PropsWithChildren, useMemo } from "react";
-import { Parsed } from "../../../api/event-parsers";
+import { Parsed } from "../../../../api/event-parsers";
 import { match } from "ts-pattern";
-import { PlayerName } from "./player/PlayerName";
-import { teamTextColors } from "../utils/colors";
+import { PlayerName } from "../player/PlayerName";
+import { teamTextColors } from "../../utils/colors";
 
 interface Props {
   event: Parsed;
