@@ -65,6 +65,36 @@ export const MatchEvent: FunctionComponent<Props> = ({ event }) => {
           </div>
         );
       })
+      .with({ type: "bomb-defused" }, () => {
+        return (
+          <div
+            className={`flex items-center gap-1 border border-solid border-green-600 text-lg`}
+          >
+            <span className={`${teamTextColors["CT"]}`}>CT</span>
+            win by defusing the bomb
+          </div>
+        );
+      })
+      .with({ type: "terrorists-win" }, () => {
+        return (
+          <div
+            className={`flex items-center gap-1 border border-solid border-green-600 text-lg`}
+          >
+            <span className={`${teamTextColors["TERRORIST"]}`}>Terrorists</span>
+            win
+          </div>
+        );
+      })
+      .with({ type: "target-bombed" }, () => {
+        return (
+          <div
+            className={`flex items-center gap-1 border border-solid border-green-600 text-lg`}
+          >
+            <span className={`${teamTextColors["TERRORIST"]}`}>Terrorists</span>
+            win by bombing the target
+          </div>
+        );
+      })
       .otherwise(() => null);
   }, [event]);
 
