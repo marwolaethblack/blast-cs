@@ -32,7 +32,6 @@ export const Map: FunctionComponent<Props> = ({ playByPlay }) => {
     setSpeed,
     shots,
     teams,
-    mapLevel,
     map,
   } = usePlayByPlay({
     playByPlay,

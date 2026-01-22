@@ -171,14 +171,6 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
 
             changeMapLevel([attackerZ, victimZ]);
 
-            // if (attackerZ <= -445 || victimZ <= -445) {
-            //   //bottom map
-            //   setMapLevel("bot");
-            // } else {
-            //   //top map
-            //   setMapLevel("top");
-            // }
-
             setScoreboard((prev) =>
               mergeScoreBoards(
                 prev,
@@ -222,14 +214,6 @@ export const usePlayByPlay = ({ playByPlay }: { playByPlay: PlayByPlay }) => {
             const victimZ = [...victim.position].pop() || 0;
 
             changeMapLevel([attackerZ, victimZ]);
-
-            // if (attackerZ <= -445 || victimZ <= -445) {
-            //   //bottom map
-            //   setMapLevel("bot");
-            // } else {
-            //   //top map
-            //   setMapLevel("top");
-            // }
 
             setScoreboard((prev) =>
               mergeScoreBoards(

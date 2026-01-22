@@ -7,6 +7,7 @@ Available on https://blast-cs.onrender.com
 ## Running locally
 
 Install dependencies with `pnpm i` in the root folder
+
 Run the app with
 
 ```
